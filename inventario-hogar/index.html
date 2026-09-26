@@ -70,6 +70,29 @@
         <button type="button" class="btn btn-outline btn-block" id="btnNuevaCompra">
           🔄 Nueva compra
         </button>
+
+        <div class="sync-card" id="syncCard">
+          <div class="sync-card__header">
+            <span aria-hidden="true">🔗</span>
+            <h3>Sincronización entre dispositivos</h3>
+          </div>
+          <p class="sync-card__status" id="syncStatus">Verificando configuración…</p>
+
+          <div id="syncConfigured" hidden>
+            <p class="sync-card__hint">Comparte este código con tus otros dispositivos para ver la misma lista:</p>
+            <div class="sync-code-row">
+              <span class="sync-code" id="syncCodeDisplay">—</span>
+              <button type="button" class="btn btn-outline" id="btnCopyCode">📋 Copiar</button>
+            </div>
+
+            <p class="sync-card__hint">¿Ya tienes un código de otro dispositivo?</p>
+            <div class="field-row field-row--join">
+              <input class="field-input" type="text" id="joinCodeInput" placeholder="Ej. CASA-7X2K" maxlength="20" aria-label="Código de hogar a unirse" />
+              <button type="button" class="btn btn-primary" id="btnJoinCode">Unirme</button>
+            </div>
+          </div>
+        </div>
+
         <div id="configList" class="category-groups"></div>
       </section>
 

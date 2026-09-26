@@ -172,6 +172,54 @@ button, input, select {
   font-size: 0.8rem;
 }
 
+/* Sincronización */
+.sync-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
+  padding: 14px;
+  margin-bottom: 16px;
+}
+.sync-card__header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.sync-card__header h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+.sync-card__status {
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.sync-card__hint {
+  margin: 12px 0 6px;
+  font-size: 0.85rem;
+  color: var(--color-text-muted);
+}
+.sync-code-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sync-code {
+  flex: 1;
+  font-weight: 800;
+  font-size: 1.1rem;
+  letter-spacing: 0.05em;
+  background: var(--color-bg);
+  border: 2px dashed var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+  text-align: center;
+}
+.field-row--join {
+  grid-template-columns: 1fr auto;
+  align-items: center;
+}
+
 /* Product cards (Inventario / Config) */
 .product-card {
   background: var(--color-surface);

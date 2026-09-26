@@ -63,4 +63,4 @@ export function saveState(state) {
   }
 }
 
-export { getNextCycleLabel };
+export { getNextCycleLabel, isValidState };

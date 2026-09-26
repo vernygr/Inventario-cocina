@@ -2,14 +2,16 @@
 // Toda mutación pasa por aquí, se persiste y notifica a la UI.
 
 import { STATES } from './data.js';
-import { loadState, saveState, getNextCycleLabel } from './storage.js';
+import { loadState, saveState, isValidState, getNextCycleLabel } from './storage.js';
 
 let state = loadState();
 const listeners = new Set();
+let onLocalMutation = null;
 
 function notify() {
   saveState(state);
   listeners.forEach((fn) => fn(state));
+  if (onLocalMutation) onLocalMutation(state);
 }
 
 export function subscribe(fn) {
@@ -17,8 +19,23 @@ export function subscribe(fn) {
   return () => listeners.delete(fn);
 }
 
+// Registra el callback que empuja los cambios locales al sincronizador remoto.
+// No se invoca cuando el estado llega de otro dispositivo (ver replaceState).
+export function setOnLocalMutation(fn) {
+  onLocalMutation = fn;
+}
+
 export function getState() {
   return state;
+}
+
+// Reemplaza el estado completo cuando llega una actualización de otro dispositivo.
+// A propósito NO dispara onLocalMutation, para no reenviar el mismo cambio de vuelta.
+export function replaceState(newState) {
+  if (!isValidState(newState)) return;
+  state = newState;
+  saveState(state);
+  listeners.forEach((fn) => fn(state));
 }
 
 function makeId() {

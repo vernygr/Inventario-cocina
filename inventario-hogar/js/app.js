@@ -3,6 +3,8 @@
 import { STATES } from './data.js';
 import {
   subscribe,
+  setOnLocalMutation,
+  replaceState,
   getState,
   getAllProducts,
   getShoppingItems,
@@ -23,6 +25,14 @@ import {
   renderSummary,
   populateCategorySelect,
 } from './ui.js';
+import {
+  isSyncConfigured,
+  getHouseholdCode,
+  setHouseholdCode,
+  generateHouseholdCode,
+  pushState,
+  listenHousehold,
+} from './sync.js';
 
 // --- Elementos ---------------------------------------------------------
 
@@ -62,6 +72,13 @@ const productAmountInput = document.getElementById('productAmount');
 const productUnitInput = document.getElementById('productUnit');
 const productFormError = document.getElementById('productFormError');
 const btnCloseProductModal = document.getElementById('btnCloseProductModal');
+
+const syncStatus = document.getElementById('syncStatus');
+const syncConfigured = document.getElementById('syncConfigured');
+const syncCodeDisplay = document.getElementById('syncCodeDisplay');
+const btnCopyCode = document.getElementById('btnCopyCode');
+const joinCodeInput = document.getElementById('joinCodeInput');
+const btnJoinCode = document.getElementById('btnJoinCode');
 
 populateCategorySelect(productCategorySelect);
 
@@ -233,3 +250,63 @@ btnNuevaCompra.addEventListener('click', async () => {
   finalizePurchaseCycle();
   showToast('Nuevo ciclo de compra iniciado.', 'success');
 });
+
+// --- Sincronización entre dispositivos ------------------------------------
+
+async function connectToHousehold(code) {
+  setHouseholdCode(code);
+  syncCodeDisplay.textContent = code;
+  await listenHousehold(code, {
+    onRemoteChange: (remoteState) => replaceState(remoteState),
+    onEmpty: () => pushState(getState()),
+  });
+}
+
+async function initSync() {
+  if (!isSyncConfigured()) {
+    syncStatus.textContent = 'La sincronización no está configurada todavía (ver js/sync.js).';
+    syncConfigured.hidden = true;
+    return;
+  }
+
+  syncConfigured.hidden = false;
+  setOnLocalMutation((currentState) => { pushState(currentState); });
+
+  let code = getHouseholdCode();
+  if (!code) {
+    code = generateHouseholdCode();
+  }
+
+  await connectToHousehold(code);
+  syncStatus.textContent = 'Sincronizado. Los cambios se reflejan automáticamente en tus otros dispositivos.';
+}
+
+btnCopyCode.addEventListener('click', async () => {
+  const code = syncCodeDisplay.textContent;
+  try {
+    await navigator.clipboard.writeText(code);
+    showToast('Código copiado.', 'success');
+  } catch {
+    showToast('No se pudo copiar automáticamente. Copia el código manualmente.', 'error');
+  }
+});
+
+btnJoinCode.addEventListener('click', async () => {
+  const code = joinCodeInput.value.trim().toUpperCase();
+  if (!code) {
+    showToast('Escribe un código válido.', 'error');
+    return;
+  }
+
+  const confirmed = await confirmDialog(
+    `Tu inventario en este dispositivo será reemplazado por el del código "${code}". ¿Deseas continuar?`,
+    { title: 'Unirse a otro código', acceptLabel: 'Unirme' }
+  );
+  if (!confirmed) return;
+
+  await connectToHousehold(code);
+  joinCodeInput.value = '';
+  showToast('Conectado al nuevo código de hogar.', 'success');
+});
+
+initSync();

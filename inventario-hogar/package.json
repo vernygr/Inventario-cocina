@@ -1,0 +1,9 @@
+{
+  "name": "inventario-hogar",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Aplicación web para gestionar el inventario del hogar y la lista de compras del supermercado.",
+  "scripts": {
+    "dev": "npx --yes serve . -l 3000"
+  }
+}

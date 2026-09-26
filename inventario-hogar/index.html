@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Inventario del Hogar</title>
+  <meta name="description" content="Revisa tu inventario, arma la lista de compras y llévala contigo al supermercado." />
+  <meta name="theme-color" content="#0f766e" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <div class="app">
+
+    <header class="app-header">
+      <div class="app-header__title">
+        <span aria-hidden="true">🏡</span>
+        <h1>Inventario del Hogar</h1>
+      </div>
+      <p class="app-header__cycle" id="cycleLabel">Próxima compra: —</p>
+    </header>
+
+    <main class="app-main" id="appMain">
+
+      <!-- INVENTARIO -->
+      <section class="view" id="view-inventario" data-view="inventario" aria-labelledby="tab-inventario">
+        <div class="view-intro">
+          <h2>Inventario</h2>
+          <p>Revisa qué tienes en casa y marca lo que necesitas comprar.</p>
+        </div>
+        <div id="inventarioList" class="category-groups"></div>
+      </section>
+
+      <!-- LISTA DE COMPRAS -->
+      <section class="view" id="view-lista" data-view="lista" aria-labelledby="tab-lista" hidden>
+        <div class="view-intro">
+          <h2>Lista de compras</h2>
+          <p>Productos que necesitas comprar en esta visita.</p>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="btnGenerarResumen">
+          🧾 Generar lista de compras
+        </button>
+        <div id="listaList" class="category-groups"></div>
+      </section>
+
+      <!-- MODO SUPERMERCADO -->
+      <section class="view" id="view-super" data-view="super" aria-labelledby="tab-super" hidden>
+        <div class="view-intro">
+          <h2>Modo supermercado</h2>
+          <p>Marca los productos conforme los colocas en el carrito.</p>
+        </div>
+        <div class="progress-card" id="progressCard">
+          <div class="progress-card__text" id="progressText">0 de 0 productos comprados</div>
+          <div class="progress-bar"><div class="progress-bar__fill" id="progressFill"></div></div>
+        </div>
+        <div id="superList" class="flat-list"></div>
+        <button type="button" class="btn btn-success btn-block" id="btnFinalizarCompra">
+          ✅ Finalizar compra
+        </button>
+      </section>
+
+      <!-- CONFIGURACIÓN -->
+      <section class="view" id="view-config" data-view="config" aria-labelledby="tab-config" hidden>
+        <div class="view-intro">
+          <h2>Configuración</h2>
+          <p>Administra tus productos y tu ciclo de compras.</p>
+        </div>
+        <button type="button" class="btn btn-primary btn-block" id="btnAgregarProducto">
+          ➕ Agregar producto
+        </button>
+        <button type="button" class="btn btn-outline btn-block" id="btnNuevaCompra">
+          🔄 Nueva compra
+        </button>
+        <div id="configList" class="category-groups"></div>
+      </section>
+
+    </main>
+
+    <nav class="bottom-nav" aria-label="Navegación principal">
+      <button type="button" class="bottom-nav__item is-active" data-nav="inventario" id="tab-inventario" aria-current="page">
+        <span aria-hidden="true">📋</span><span>Inventario</span>
+      </button>
+      <button type="button" class="bottom-nav__item" data-nav="lista" id="tab-lista">
+        <span aria-hidden="true">🛒</span><span>Lista</span>
+      </button>
+      <button type="button" class="bottom-nav__item" data-nav="super" id="tab-super">
+        <span aria-hidden="true">🏪</span><span>Súper</span>
+      </button>
+      <button type="button" class="bottom-nav__item" data-nav="config" id="tab-config">
+        <span aria-hidden="true">⚙️</span><span>Config</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- MODAL: Agregar / Editar producto -->
+  <div class="modal-overlay" id="productModalOverlay" hidden>
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="productModalTitle">
+      <div class="modal__header">
+        <h2 id="productModalTitle">Agregar producto</h2>
+        <button type="button" class="icon-btn" id="btnCloseProductModal" aria-label="Cerrar">✕</button>
+      </div>
+      <form id="productForm" class="modal__body" novalidate>
+        <input type="hidden" id="productId" />
+
+        <label class="field-label" for="productName">Nombre del producto</label>
+        <input class="field-input" type="text" id="productName" maxlength="60" placeholder="Ej. Papel higiénico" required />
+
+        <label class="field-label" for="productCategory">Categoría</label>
+        <select class="field-input" id="productCategory"></select>
+
+        <div class="field-row">
+          <div>
+            <label class="field-label" for="productAmount">Cantidad (opcional)</label>
+            <input class="field-input" type="number" id="productAmount" min="0" step="any" placeholder="Ej. 2" />
+          </div>
+          <div>
+            <label class="field-label" for="productUnit">Unidad</label>
+            <input class="field-input" type="text" id="productUnit" maxlength="20" placeholder="unidades, kg, paquetes…" />
+          </div>
+        </div>
+
+        <p class="field-error" id="productFormError" role="alert" hidden></p>
+
+        <div class="modal__actions">
+          <button type="submit" class="btn btn-primary btn-block" id="btnSaveProduct">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: Confirmación genérica -->
+  <div class="modal-overlay" id="confirmModalOverlay" hidden>
+    <div class="modal modal--small" role="alertdialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+      <div class="modal__header">
+        <h2 id="confirmModalTitle">Confirmar</h2>
+      </div>
+      <div class="modal__body">
+        <p id="confirmModalMessage"></p>
+        <div class="modal__actions modal__actions--row">
+          <button type="button" class="btn btn-outline btn-block" id="btnConfirmCancel">Cancelar</button>
+          <button type="button" class="btn btn-danger btn-block" id="btnConfirmAccept">Confirmar</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Resumen para el supermercado -->
+  <div class="modal-overlay" id="resumenOverlay" hidden>
+    <div class="modal modal--summary" role="dialog" aria-modal="true" aria-labelledby="resumenTitle">
+      <div class="modal__header modal__header--summary">
+        <h2 id="resumenTitle">🧾 Lista de compras</h2>
+        <button type="button" class="icon-btn" id="btnCloseResumen" aria-label="Cerrar">✕</button>
+      </div>
+      <div class="modal__body modal__body--summary" id="resumenBody"></div>
+    </div>
+  </div>
+
+  <!-- Notificaciones -->
+  <div id="toastContainer" class="toast-container" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
